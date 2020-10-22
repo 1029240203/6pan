@@ -8,7 +8,5 @@ EXPOSE 10003
 
 COPY ./app /app
 
-VOLUME /app/users
-
 
 
