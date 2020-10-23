@@ -1,16 +1,19 @@
 name: Docker Image CI
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+#  push:
+#    branches: [ main ]
+#  pull_request:
+#    branches: [ main ]
+   watch:
+     types: started
 
 jobs:
 
   build:
 
     runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
 
     steps:
     - uses: actions/checkout@v2
@@ -21,7 +24,7 @@ jobs:
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD 
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ykxvk8yl5l/6pan:latest
+      run: docker build . --file Dockerfile-test --tag ykxvk8yl5l/6pan:test
       
     - name: Docker Push
       run: docker push ykxvk8yl5l/6pan
