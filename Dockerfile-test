@@ -6,7 +6,7 @@ ENV LISTEN_PORT 10003
 EXPOSE 10003
 
 ARG islocal=0
-RUN if [ "x$islocal" = 0 ] ; then VOLUME /app ; fi
+RUN if [ "x$islocal" = 1 ] ; then VOLUME /app ; fi
 
 
 COPY ./app /app
