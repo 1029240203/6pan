@@ -1,0 +1,16 @@
+FROM tiangolo/uwsgi-nginx-flask:python3.8-alpine
+RUN pip install requests
+
+
+ENV LISTEN_PORT 10003
+EXPOSE 10003
+
+ENV IS_LOCAL=0
+if(IS_LOCAL==1){
+VOLUME /app
+}
+
+
+
+COPY ./app /app
+RUN rm -f /app/users/.gitkeep
