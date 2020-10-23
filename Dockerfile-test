@@ -5,8 +5,7 @@ RUN pip install requests
 ENV LISTEN_PORT 10003
 EXPOSE 10003
 
-ARG islocal=0
-RUN if [ "x$islocal" = 1 ] ; then VOLUME /app ; fi
+VOLUME /app 
 
 
 COPY ./app /app
