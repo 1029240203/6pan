@@ -24,7 +24,7 @@ jobs:
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD 
     - name: Build the Docker image
-      run: docker build . --file Dockerfile-test --tag ykxvk8yl5l/6pan:latest
+      run: docker build . --file Dockerfile --tag ykxvk8yl5l/6pan:latest
       
     - name: Docker Push
       run: docker push ykxvk8yl5l/6pan
