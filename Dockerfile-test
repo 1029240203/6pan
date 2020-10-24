@@ -6,7 +6,7 @@ ENV LISTEN_PORT 10003
 EXPOSE 10003
 
 ENV IS_LOCAL=0
-RUN [ "x$IS_LOCAL" = 0 ] ; then echo hello>/debug.txt ; else echo danmit>/debug.txt ; fi
+RUN if [ "x$IS_LOCAL" = 0 ] ; then echo hello>/debug.txt ; else echo danmit>/debug.txt ; fi
 
 VOLUME /app 
 
