@@ -130,6 +130,11 @@
         updated:function(){
           feather.replace();
         },
+        watch:{
+          path: function (val) {
+              this.createPath(val)
+          }
+        },
     filters: {
         bytesToSize:function(bytes) {
            if (bytes === 0) return '0 B';
@@ -230,6 +235,7 @@
           getFiles:function () {
               layer.load(1);
               var that = this;
+              that.files=[];
               that.pageNo=1;
               that.path='/';
               var data = that.currentUser;
@@ -329,7 +335,7 @@ var a=window.open('about:blank').document;
                           layer.msg("请求出错，稍后重试或重新登陆");
                           return false;
                       }
-                      a.body.innerHTML='<div style="width: 100%;text-align: center;"><video id="example_video_1" class="video-js vjs-default-skin" controls preload="none" style="width:90%;margin: 0 auto;" <source src="'+response.data['downloadAddress']+'" type="video/mp4"> </video></div>';
+                      a.body.innerHTML='<div style="width: 100%;text-align: center;"><video id="example_video_1" class="video-js vjs-default-skin" controls preload="none" style="width:90%;margin: 0 auto;" <source src="'+response.data['downloadAddress']+'" type="video/mp4"> </video></br><textarea style="width: 100%">'+response.data['downloadAddress']+'</textarea></div>';
                   })
                   .catch(function (error) { // 请求失败处理
                     console.log(error);
@@ -342,11 +348,10 @@ var a=window.open('about:blank').document;
               var that = this;
               that.files=[];
               that.path = path;
-              that.createPath(path);
+              //that.createPath(path);
               that.pageNo=1;
               var data = that.currentUser;
-              data['pageno']=that.pageNo;
-              data['path']=that.path;
+              data['pageno']=that.pageNo;        data['path']=that.path;
               data['keyword']=that.keyword;
               var url = '';
               if(that.action=='video'){
