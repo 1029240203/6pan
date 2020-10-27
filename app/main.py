@@ -132,11 +132,15 @@ def getFiles():
     rdata = {'parentPath': data['path'], 'name': '', 'limit': 20, 'start': start, 'orderby': ''}
 
     headers['referer'] = "https://v3-beta.6pan.cn/files/all/"
-    r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies)
-    result = json.loads(r.text)
-    if r.status_code != 200:
+    try:
+        r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies)
+    except:
         return 'error'
-    return json.dumps(result['dataList'])
+    else:
+        result = json.loads(r.text)
+        if r.status_code != 200:
+            return 'error'
+        return json.dumps(result['dataList'])
 
 
 @app.route('/getVideos',methods=['POST'])
