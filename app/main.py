@@ -13,15 +13,21 @@ usersdir = basedir+'/users/'
 app = Flask(__name__)
 
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36'}
-@app.route('/')
-def main():
-    return render_template('main.html')
-
 @app.route('/favicon.ico')
 def get_fav():
     return app.send_static_file('favicon.ico')
 
-@app.route('/player')
+
+@app.route('/')
+def main():
+    return render_template('index.html')
+
+@app.route('/6pan')
+def sixpan():
+    return render_template('main.html')
+
+
+@app.route('/movies')
 def palyer():
     return render_template('player.html')
 
