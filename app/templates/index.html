@@ -7,13 +7,11 @@
     <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport"/>
     <link href="/favicon.ico" rel="shortcut icon"/>
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" type="text/css"/>
-    <!--减少服务器的资源开销用了cdn,如果想全部使用自己的服务器的jquery,注释cdn的jquery和"js/qieh.js",取消注释"js/jquery.min.js"即可-->
-    <!--<script src="js/jquery.min.js"></script>-->
     <script src="{{ url_for('static', filename='js/jquery-3.5.1.min.js')}}"></script>
     <script src="{{ url_for('static', filename='js/qieh.js') }}"></script>
     <script src="{{ url_for('static', filename='js/particles.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/font.js') }}"></script>
-    <title>NasHomeCloud</title>
+    <title>导航</title>
     <style type="text/css">
         /*背景图设置,设置路径在"css/style.css"下的3315行开始,默认关闭*/
         /*也可以直接打开下面注释直接覆盖原生的渐变色背景,建议打开背景图之后注释原生的3318和3319行渐变色背景样式*/
