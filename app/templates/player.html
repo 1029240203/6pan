@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Player</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/element-ui.css') }}">
+<style>
+  .block{padding:10px;text-align:center;border-right:1px solid #eff2f6;display:inline-block;width:20%;box-sizing:border-box;overflow-x: hidden;vertical-align: middle;}
+  .el-button{margin-top: 5px;}
+</style>
+</head>
+<body style="margin: 0px;">
+    <div id="app">
+
+      <el-container v-loading="loading" >
+        <el-aside width="20%">  
+            <el-menu  :default-active="currentSite.id.toString()"  class="el-menu-vertical-demo" @open="handleOpen"    @close="handleClose"  background-color="#545c64" text-color="#fff"     active-text-color="#ffd04b">
+              <el-menu-item v-for="site in sites" :index="site.id.toString()" @click="changeSite(site)">
+                <i class="el-icon-menu"></i>
+                <span slot="title">${site.name}</span>
+              </el-menu-item>
+            </el-menu>
+        </el-aside>
+        <el-container>
+          <el-header style="height: auto;">
+              <el-row>
+              <el-button v-for="category in currentSiteCategory" type="category['@id']==currentCategory['@id']?success" @click="getVideos(category)">${category['#text']|categoryName}</el-button>
+              </el-row>
+          </el-header>
+          <el-main id="videosContainer">
+              <div class="block" v-for="video in videos">
+                  <el-popover  placement="bottom"  :width="poverwidth" trigger="click" >
+                      <div v-if="Array.isArray(video.dl.dd)">
+                        <el-tabs type="border-card">
+                          <el-tab-pane v-for="tab in video.dl.dd" :label="tab['@flag']" style="overflow:scroll;max-height: 600px;">
+                            <el-button v-for="text in tab['#text'].split('#')" @click="play(text)">
+                              ${text|playName}
+                            </el-button>
+                          </el-tab-pane>
+                        </el-tabs>
+                      </div>
+                      <div v-else>
+                        <el-tabs type="border-card">
+                          <el-tab-pane :label="video.dl.dd['@flag']" style="overflow:scroll;max-height: 600px;">
+                            <el-button v-for="text in video.dl.dd['#text'].split('#')" @click="play(text)">
+                              ${text|playName}
+                            </el-button>
+                          </el-tab-pane>
+                       </el-tabs>
+                      </div>        
+                    <div slot="reference">
+                      <el-image style="width: 100%" lazy  :src="video.pic" :title="video.name" :alt="video.name" fit="fill"></el-image>
+                      <span style="white-space: nowrap;display: inline;" :title="video.name">${ video.name }</span>
+                    </div>
+                </el-popover>
+              </div>
+              <el-pagination v-if="totalPage>1" background  layout="prev, pager, next" :current-page="currentPage"  :total="totalPage" @current-change="handleCurrentChange" > </el-pagination>
+         
+          </el-main>
+        </el-container>
+      </el-container>
+ 
+    </div>
+</body>
+<script src="{{ url_for('static', filename='js/jquery-3.5.1.min.js')}}"></script>
+<script src="{{ url_for('static', filename='layer/layer.js')}}"></script>
+<script src="{{ url_for('static', filename='js/vue.js')}}"></script>
+<script src="{{ url_for('static', filename='js/element-ui.js')}}"></script>
+<script src="{{ url_for('static', filename='js/axios.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/fast-xml-parser.js')}}"></script>
+<script src="{{ url_for('static', filename='js/initData.js')}}"></script>
+<script src="{{ url_for('static', filename='js/xgplayer.js')}}"></script>
+<script src="{{ url_for('static', filename='js/xgplayer-hls.js')}}"></script>
+
+<script>
+var app = new Vue({
+  delimiters: ['${', '}'],
+  el: '#app',
+  data: {
+    isCollapse: true,
+    sites:sites,
+    currentSite:sites[0],
+    currentSiteCategory:[],
+    currentCategory:{},
+    loading:false,
+    currentPage:1,
+    videos:[],
+    poverwidth:200,
+    totalPage:1
+  },
+  mounted: function () {
+        this.$nextTick(function () {
+            // Code that will run only after the
+            // entire view has been rendered
+            this.getCategoryData(this.currentSite.api);
+            this.poverwidth = $('#videosContainer').width();
+        })
+    },
+  filters: {
+    playName: function (value) {
+      return value.split('$')[0];
+    },
+    categoryName:function(value){
+        if(value.indexOf('{if')){
+          var re = /\{if(.*)\}/gi;
+          value = value.replace(re, '');
+        }
+        return value;
+    } 
+  },  
+  methods: {
+      handleOpen(key, keyPath) {
+        console.log(key, keyPath);
+      },
+      handleClose(key, keyPath) {
+        console.log(key, keyPath);
+      },
+      handleCurrentChange(val) {
+        this.currentPage = val;
+        this.getVideos(this.currentCategory);
+      },
+      changeSite(site){
+        var that=this;
+        that.currentSite = site;
+        that.currentPage = 1;
+        that.currentSiteCategory = [];
+        that.videos = [];
+        that.currentCategory={};
+        that.getCategoryData(site.api);
+      },
+      getCategoryData(url){
+        var that=this;
+        layer.load(1);
+        var data = {"apiurl":url};
+        axios.post('/getplayer',data)
+              .then(function (response) {
+                layer.closeAll('loading');
+                  //console.log(response);
+                  if(response.data=='error'){
+                      layer.msg("请求出错，稍后重试");
+                      return false;
+                  }
+                  //console.log(response.data)
+                  that.currentSiteCategory = response.data.rss.class.ty;
+                  //console.log(response.data)
+              })
+              .catch(function (error) { // 请求失败处理
+                console.log(error);
+              });
+      },
+      play(videoUrl){
+        var videoinfo = videoUrl.split('$');
+        var index1=videoinfo[1].lastIndexOf(".");
+        var index2=videoinfo[1].length;
+        var type=videoinfo[1].substring(index1,index2);
+        
+
+        if(type.toLowerCase()!='.m3u8'){
+          window.open(videoinfo[1],"_blank");
+        }else{
+          var player = null;
+          layer.open({
+            type: 1,
+            closeBtn: 1,
+            shadeClose: true,
+            shade: false,
+            content: '<div id="mse"></div>',
+            success:function(){
+                player = new HlsJsPlayer({
+                    "id": "mse",
+                    "url": videoinfo[1],
+                    "playsinline": true,
+                    "autoplay":true,
+                    "whitelist": [
+                        ""
+                    ],
+                    "autoplay": true,
+                      });
+            },
+            end: function(){
+                player.destroy();
+            }
+         });
+          
+        }
+      },
+      getVideos(category){
+        var that=this;
+        that.videos=[];
+        that.loading = true;
+        that.currentCategory = category;
+        var data = {"apiurl":that.currentSite.api+'?ac=videolist&t=' + category['@id'] + '&pg=' + that.currentPage};
+        axios.post('/getplayer',data)
+              .then(function (response) {
+                that.loading = false;
+                  if(response.data=='error'){
+                      layer.msg("请求出错，该分类下可能没有数据");
+                      return false;
+                  }
+                  that.totalPage = parseInt(response.data.rss.list['@pagecount']);
+                  that.currentPage = parseInt(response.data.rss.list['@page']);
+                  that.videos = response.data.rss.list.video;
+                  //console.log(response.data)
+              })
+              .catch(function (error) { // 请求失败处理
+                console.log(error);
+              });
+      }
+    }
+})
+  </script>
+</html>
