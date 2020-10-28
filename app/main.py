@@ -1,8 +1,11 @@
+#! /usr/bin/env python
 from flask import request, Flask, render_template,jsonify
 import requests
 import hashlib
 import json
 import os
+import xmltodict
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 usersdir = basedir+'/users/'
 
@@ -13,6 +16,35 @@ headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWe
 @app.route('/')
 def main():
     return render_template('main.html')
+
+@app.route('/favicon.ico')
+def get_fav():
+    return app.send_static_file('favicon.ico')
+
+@app.route('/player')
+def palyer():
+    return render_template('player.html')
+
+
+@app.route('/getplayer',methods=['POST'])
+def getplayer():
+    data = request.get_json(silent=True)
+    url = data['apiurl']
+    try:
+        r = requests.post(url, verify=False, headers=headers)
+        doc = xmltodict.parse(r.text)
+    except:
+        return 'error'
+    else:
+        if doc is None:
+            return "error"
+        else:
+            return json.dumps(doc)
+
+    
+    
+
+
 
 @app.route('/login',methods=['POST'])
 def login():
@@ -132,6 +164,7 @@ def getFiles():
     rdata = {'parentPath': data['path'], 'name': '', 'limit': 20, 'start': start, 'orderby': ''}
 
     headers['referer'] = "https://v3-beta.6pan.cn/files/all/"
+
     try:
         r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies)
     except:
@@ -141,6 +174,7 @@ def getFiles():
         if r.status_code != 200:
             return 'error'
         return json.dumps(result['dataList'])
+
 
 
 @app.route('/getVideos',methods=['POST'])
