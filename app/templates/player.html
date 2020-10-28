@@ -117,12 +117,14 @@ var app = new Vue({
       },
       handleCurrentChange(val) {
         this.currentPage = val;
+        that.totalPage=1;
         this.getVideos(this.currentCategory);
       },
       changeSite(site){
         var that=this;
         that.currentSite = site;
         that.currentPage = 1;
+        that.totalPage=1;
         that.currentSiteCategory = [];
         that.videos = [];
         that.currentCategory={};
