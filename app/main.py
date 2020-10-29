@@ -20,7 +20,7 @@ def get_fav():
 
 @app.route('/')
 def main():
-    return render_template('main.html')
+    return render_template('index.html')
 
 @app.route('/6pan')
 def sixpan():
@@ -37,7 +37,7 @@ def getplayer():
     data = request.get_json(silent=True)
     url = data['apiurl']
     try:
-        r = requests.post(url, verify=False, headers=headers)
+        r = requests.post(url, verify=False, headers=headers, timeout=40)
         doc = xmltodict.parse(r.text)
     except:
         return 'error'
