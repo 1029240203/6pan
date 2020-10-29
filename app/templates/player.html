@@ -24,7 +24,7 @@
         <el-container>
           <el-header style="height: auto;">
               <el-row>
-              <el-button v-for="category in currentSiteCategory" type="category['@id']==currentCategory['@id']?success" @click="getVideos(category)">${category['#text']|categoryName}</el-button>
+              <el-button v-for="category in showCategory" type="category['@id']==currentCategory['@id']?success" @click="getVideos(category)">${category['#text']|categoryName}</el-button>
               </el-row>
           </el-header>
           <el-main id="videosContainer">
@@ -88,6 +88,13 @@ var app = new Vue({
     poverwidth:200,
     totalPage:1
   },
+  computed: {
+    showCategory: function () {
+      return this.currentSiteCategory.filter(function (cat) {
+        return (cat['#text'].indexOf("伦理")==-1)&&(cat['#text'].indexOf("福利")==-1);
+      })
+    }
+  },
   mounted: function () {
         this.$nextTick(function () {
             // Code that will run only after the
@@ -117,7 +124,6 @@ var app = new Vue({
       },
       handleCurrentChange(val) {
         this.currentPage = val;
-        that.totalPage=1;
         this.getVideos(this.currentCategory);
       },
       changeSite(site){
@@ -164,6 +170,7 @@ var app = new Vue({
           layer.open({
             type: 1,
             closeBtn: 1,
+            offset: 'lt',
             shadeClose: true,
             shade: false,
             content: '<div id="mse"></div>',
@@ -202,6 +209,10 @@ var app = new Vue({
                   that.totalPage = parseInt(response.data.rss.list['@pagecount']);
                   that.currentPage = parseInt(response.data.rss.list['@page']);
                   that.videos = response.data.rss.list.video;
+                  if(that.videos.length==0){
+                    layer.msg("请求出错，该分类下可能没有数据");
+                      return false;
+                  }
                   //console.log(response.data)
               })
               .catch(function (error) { // 请求失败处理
