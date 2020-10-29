@@ -37,7 +37,7 @@ def getplayer():
     data = request.get_json(silent=True)
     url = data['apiurl']
     try:
-        r = requests.post(url, verify=False, headers=headers, timeout=40)
+        r = requests.get(url, verify=False, headers=headers, timeout=40)
         doc = xmltodict.parse(r.text)
     except:
         return 'error'
