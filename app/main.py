@@ -20,7 +20,7 @@ def get_fav():
 
 @app.route('/')
 def main():
-    return render_template('index.html')
+    return render_template('main.html')
 
 @app.route('/6pan')
 def sixpan():
