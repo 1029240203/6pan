@@ -46,10 +46,10 @@ const sites = [
   },
   {
     id: 6,
-    key: 'mgtvzy',
-    name: '芒果 TV 资源网',
-    api: 'https://api.shijiapi.com/api.php/provide/vod/at/xml/',
-    download: '',
+    key: 'zuidazy',
+    name: '最大资源网',
+    api: 'http://www.zdziyuan.com/inc/api.php',
+    download: 'http://www.zdziyuan.com/inc/apidown.php',
     isActive: 1,
     group: '默认'
   },
