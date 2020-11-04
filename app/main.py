@@ -60,7 +60,8 @@ def login():
     # return jsonify(recognize_info), 201
     data = request.get_json(silent=True)
     s = requests.session()
-    url = "https://account.6pan.cn/v3/oauth/login"
+    #url = "https://account.6pan.cn/v3/oauth/login"
+    url = "https://api.2dland.cn/v3/oauth/login"
     username = data['username']
     password = data['password']
     pwd=hashlib.md5(password.encode("utf-8")).hexdigest()
@@ -73,7 +74,8 @@ def login():
     else:
         headers["accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
         headers["accept-encoding"] = "br, gzip, deflate"
-        checkcookieurl = "https://account.6pan.cn/v3/oauth/checkCookie?appid=3a5654a9ccc9&destination=https:%2F%2Fv3-beta.6pan.cn%2Ffiles&lang=zh-CN&scope=&state=7fjdgjeff&response=redirect"
+        #checkcookieurl = "https://account.6pan.cn/v3/oauth/checkCookie?appid=3a5654a9ccc9&destination=https:%2F%2Fv3-beta.6pan.cn%2Ffiles&lang=zh-CN&scope=&state=7fjdgjeff&response=redirect"
+        checkcookieurl = "https://account.2dland.cn/v3/oauth/checkCookie?appid=3a5654a9ccc9&destination=https:%2F%2Fv3-beta.2dland.cn%2Ffiles&lang=zh-CN&scope=&state=7fjdgjeff&response=redirect"
         rc = s.get(checkcookieurl, verify=False, headers=headers)
         user = {}
         user['username']=username
@@ -95,7 +97,8 @@ def relogin():
     # return jsonify(recognize_info), 201
     data = request.get_json(silent=True)
     s = requests.session()
-    url = "https://account.6pan.cn/v3/oauth/login"
+    #url = "https://account.6pan.cn/v3/oauth/login"
+    url = "https://account.2dland.cn/v3/oauth/login"
     username = data['username']
 
     with open(usersdir + username+".txt") as f:
@@ -113,7 +116,7 @@ def relogin():
     else:
         headers["accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
         headers["accept-encoding"] = "br, gzip, deflate"
-        checkcookieurl = "https://account.6pan.cn/v3/oauth/checkCookie?appid=3a5654a9ccc9&destination=https:%2F%2Fv3-beta.6pan.cn%2Ffiles&lang=zh-CN&scope=&state=7fjdgjeff&response=redirect"
+        checkcookieurl = "https://account.2dland.cn/v3/oauth/checkCookie?appid=3a5654a9ccc9&destination=https:%2F%2Fv3-beta.2dland.cn%2Ffiles&lang=zh-CN&scope=&state=7fjdgjeff&response=redirect"
         rc = s.get(checkcookieurl, verify=False, headers=headers)
         user = {}
         user['username']=username
@@ -165,11 +168,11 @@ def getFiles():
     if 'qingzhen-token' not in data.keys():
         return 'error'
     ucookies = data['qingzhen-token']
-    url = 'https://api.6pan.cn/v3/files/list'
+    url = 'https://api.2dland.cn/v3/files/list'
     start = (int(data['pageno']) - 1) * 20
     rdata = {'parentPath': data['path'], 'name': '', 'limit': 20, 'start': start, 'orderby': ''}
 
-    headers['referer'] = "https://v3-beta.6pan.cn/files/all/"
+    headers['referer'] = "https://v3-beta.2dland.cn/files/all/"
 
     try:
         r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies)
@@ -189,11 +192,11 @@ def getVideos():
     if 'qingzhen-token' not in data.keys():
         return 'error'
     ucookies = data['qingzhen-token']
-    url = 'https://api.6pan.cn/v3/files/list'
+    url = 'https://api.2dland.cn/v3/files/list'
     start = (int(data['pageno']) - 1) * 20
     rdata = {'parentIdentity': '::all', 'name': '', 'limit': 20, 'start': start, 'orderby': '','type': 30}
 
-    headers['referer'] = "https://v3-beta.6pan.cn/files/all/"
+    headers['referer'] = "https://v3-beta.2dland.cn/files/all/"
     r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies)
     result = json.loads(r.text)
     if r.status_code != 200:
@@ -206,9 +209,9 @@ def getDownload():
     if 'qingzhen-token' not in data.keys():
         return 'error'
     ucookies = data['qingzhen-token']
-    url = 'https://api.6pan.cn/v3/newfile/download'
+    url = 'https://api.2dland.cn/v3/newfile/download'
     rdata = {'identity': data['identity']}
-    headers['referer'] = "https://v3-beta.6pan.cn/files/all/"
+    headers['referer'] = "https://v3-beta.2dland.cn/files/all/"
     r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies)
     result = json.loads(r.text)
     if r.status_code != 200:
@@ -222,11 +225,11 @@ def searchFiles():
     if 'qingzhen-token' not in data.keys():
         return 'error'
     ucookies = data['qingzhen-token']
-    url = 'https://api.6pan.cn/v3/newfile/list'
+    url = 'https://api.2dland.cn/v3/newfile/list'
     start = (int(data['pageno']) - 1) * 20
     keyword = data['keyword']
     rdata = {'limit': 20, 'parentIdentity': "", 'name': keyword,'start': start, 'search': True,}
-    headers['referer'] = "https://v3-beta.6pan.cn/files/all/"
+    headers['referer'] = "https://v3-beta.2dland.cn/files/all/"
     r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies)
     result = json.loads(r.text)
     if r.status_code != 200:
