@@ -46,9 +46,10 @@
           <div class="btn-group mr-2">
               <button type="button" class="btn btn-sm btn-outline-secondary" @click="search">搜索</button>
               <button type="button" class="btn btn-sm btn-outline-secondary" @click="getAllFiles">所有文件</button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" @click="getAllVideos">所有视频</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" @click="checkOffline">离线下载</button>
               <button type="button" class="btn btn-sm btn-outline-secondary" @click="relogin">重新登陆</button>
               <button type="button" class="btn btn-sm btn-outline-secondary" @click="delUser">删除当前用户</button>
+              <!-- <button type="button" class="btn btn-sm btn-outline-secondary" @click="getAllVideos">所有视频</button> -->
           </div>
         </div>
       </div>
@@ -315,6 +316,61 @@
                   layer.close(index);
                 });
           },
+
+          checkOffline:function(){
+              var that = this ;
+              that.action='checkOffline';
+              var data = that.currentUser;
+              var url ="/checkOffline";
+                axios.post(url,data)
+                  .then(function (response) {
+                      layer.closeAll('loading');
+                       if(response.data=='error'){
+                          layer.msg("请求出错，稍后重试或重新登陆");
+                          return false;
+                      }
+                      if(response.data['available']>0){
+                          that.offline(response.data['available']);
+                      }
+                  })
+                  .catch(function (error) { // 请求失败处理
+                    console.log(error);
+                  });
+          },
+
+
+
+          offline:function(i){
+              var that = this ;
+              that.action='offline';
+              layer.prompt({title: '离线下载到根目录，只支持磁力还能下载'+i+'次', formType: 2}, function(text, index){
+                layer.close(index);
+                layer.load(1);
+                var data = that.currentUser;
+                data['textLink']=text;
+                var url ="/offline";
+                axios.post(url,data)
+                  .then(function (response) {
+                      layer.closeAll('loading');
+                      console.log(response);
+                       if(response.data=='error'){
+                          layer.msg("请求出错，稍后重试或重新登陆");
+                          return false;
+                      }
+                      if(response.data['successCount']>0){
+                        layer.msg('下载成功');
+                      }else{
+                        layer.msg('下载失败，稍后重试');
+                      }
+
+                  })
+                  .catch(function (error) { // 请求失败处理
+                    console.log(error);
+                  });
+                //layer.msg('演示完毕！您的口令：'+ pass +'<br>您最后写下了：'+text);
+              });
+          },
+
           getAllVideos:function () {
             this.action='video';
             this.pageNo=1;
