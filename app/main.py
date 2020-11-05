@@ -61,7 +61,7 @@ def login():
     data = request.get_json(silent=True)
     s = requests.session()
     #url = "https://account.6pan.cn/v3/oauth/login"
-    url = "https://api.2dland.cn/v3/oauth/login"
+    url = "https://account.2dland.cn/v3/oauth/login"
     username = data['username']
     password = data['password']
     pwd=hashlib.md5(password.encode("utf-8")).hexdigest()
@@ -75,8 +75,8 @@ def login():
         headers["accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
         headers["accept-encoding"] = "br, gzip, deflate"
         #checkcookieurl = "https://account.6pan.cn/v3/oauth/checkCookie?appid=3a5654a9ccc9&destination=https:%2F%2Fv3-beta.6pan.cn%2Ffiles&lang=zh-CN&scope=&state=7fjdgjeff&response=redirect"
-        checkcookieurl = "https://account.2dland.cn/v3/oauth/checkCookie?appid=3a5654a9ccc9&destination=https:%2F%2Fv3-beta.2dland.cn%2Ffiles&lang=zh-CN&scope=&state=7fjdgjeff&response=redirect"
-        rc = s.get(checkcookieurl, verify=False, headers=headers)
+        checkcookieurl = "https://account.2dland.cn/v3/oauth/checkCookie?appid=3a5654a9ccc9&destination=https:%2F%2F2dland.cn%2Ffiles%2Fall%2F&lang=zh-CN&scope=&state=7hk2fic6c&response=redirect"
+        rc = s.get(checkcookieurl, verify=False, headers=headers, timeout=40)
         user = {}
         user['username']=username
         user['password'] = pwd
@@ -109,15 +109,15 @@ def relogin():
     #pwd=hashlib.md5(password.encode("utf-8")).hexdigest()
 
     d = {'user': username, 'password': password, 'countryCode': ''}
-    r = s.post(url, verify=False, data=d)
+    r = s.post(url, verify=False, data=d, timeout=40)
     result = json.loads(r.text)
     if result['success'] == False:
         return 'error'
     else:
         headers["accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
         headers["accept-encoding"] = "br, gzip, deflate"
-        checkcookieurl = "https://account.2dland.cn/v3/oauth/checkCookie?appid=3a5654a9ccc9&destination=https:%2F%2Fv3-beta.2dland.cn%2Ffiles&lang=zh-CN&scope=&state=7fjdgjeff&response=redirect"
-        rc = s.get(checkcookieurl, verify=False, headers=headers)
+        checkcookieurl = "https://account.2dland.cn/v3/oauth/checkCookie?appid=3a5654a9ccc9&destination=https:%2F%2F2dland.cn%2Ffiles%2Fall%2F&lang=zh-CN&scope=&state=7hk2fic6c&response=redirect"
+        rc = s.get(checkcookieurl, verify=False, headers=headers, timeout=40)
         user = {}
         user['username']=username
         user['password'] = password
@@ -172,10 +172,10 @@ def getFiles():
     start = (int(data['pageno']) - 1) * 20
     rdata = {'parentPath': data['path'], 'name': '', 'limit': 20, 'start': start, 'orderby': ''}
 
-    headers['referer'] = "https://v3-beta.2dland.cn/files/all/"
+    headers['referer'] = "https://2dland.cn/files/all/"
 
     try:
-        r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies)
+        r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies, timeout=40)
     except:
         return 'error'
     else:
@@ -196,8 +196,8 @@ def getVideos():
     start = (int(data['pageno']) - 1) * 20
     rdata = {'parentIdentity': '::all', 'name': '', 'limit': 20, 'start': start, 'orderby': '','type': 30}
 
-    headers['referer'] = "https://v3-beta.2dland.cn/files/all/"
-    r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies)
+    headers['referer'] = "https://2dland.cn/files/all/"
+    r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies, timeout=40)
     result = json.loads(r.text)
     if r.status_code != 200:
         return 'error'
@@ -211,8 +211,8 @@ def getDownload():
     ucookies = data['qingzhen-token']
     url = 'https://api.2dland.cn/v3/newfile/download'
     rdata = {'identity': data['identity']}
-    headers['referer'] = "https://v3-beta.2dland.cn/files/all/"
-    r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies)
+    headers['referer'] = "https://2dland.cn/files/all/"
+    r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies, timeout=40)
     result = json.loads(r.text)
     if r.status_code != 200:
         return 'error'
@@ -229,8 +229,8 @@ def searchFiles():
     start = (int(data['pageno']) - 1) * 20
     keyword = data['keyword']
     rdata = {'limit': 20, 'parentIdentity': "", 'name': keyword,'start': start, 'search': True,}
-    headers['referer'] = "https://v3-beta.2dland.cn/files/all/"
-    r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies)
+    headers['referer'] = "https://2dland.cn/files/all/"
+    r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies, timeout=40)
     result = json.loads(r.text)
     if r.status_code != 200:
         return 'error'
