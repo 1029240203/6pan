@@ -171,19 +171,19 @@ def getFiles():
     ucookies = data['qingzhen-token']
     url = 'https://api.2dland.cn/v3/files/list'
     start = (int(data['pageno']) - 1) * 20
-    rdata = {'parentPath': data['path'], 'name': '', 'limit': 20, 'start': start, 'orderby': ''}
+    rdata = {'parentPath': data['path'], 'name': '', 'limit': 20, 'start': start, "orderby": [["ctime", "DESC"]]}
 
     headers['referer'] = "https://2dland.cn/files/all/"
 
     try:
-        r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies, timeout=40)
+        r = requests.post(url, verify=False, json=rdata, headers=headers, cookies=ucookies, timeout=40)
     except:
         return 'error'
     else:
         result = json.loads(r.text)
         if r.status_code != 200:
             return 'error'
-        return json.dumps(result['dataList'])
+        return json.dumps(result)
 
 
 
@@ -202,7 +202,7 @@ def getVideos():
     result = json.loads(r.text)
     if r.status_code != 200:
         return 'error'
-    return json.dumps(result['dataList'])
+    return json.dumps(result)
 
 @app.route('/getDownload',methods=['POST'])
 def getDownload():
@@ -235,7 +235,7 @@ def searchFiles():
     result = json.loads(r.text)
     if r.status_code != 200:
         return 'error'
-    return json.dumps(result['dataList'])
+    return json.dumps(result)
 
 
 @app.route('/checkOffline',methods=['POST'])
