@@ -402,17 +402,17 @@
           getAllVideos:function () {
             this.action='video';
             this.pageNo=1;
-            that.currentPage=1;
-            that.totalPage=1;
-            that.totalNum=0;
+            this.currentPage=1;
+            this.totalPage=1;
+            this.totalNum=0;
             this.getFiles();
           },
           getAllFiles:function () {
             this.action='file';
              this.pageNo=1;
-             that.currentPage=1;
-            that.totalPage=1;
-            that.totalNum=0;
+             this.currentPage=1;
+             this.totalPage=1;
+             this.totalNum=0;
             this.getFiles();
           },
           async play(vfile) {
