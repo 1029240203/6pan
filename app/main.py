@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import xmltodict
+import time
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 usersdir = basedir+'/users/'
@@ -235,6 +236,51 @@ def searchFiles():
     if r.status_code != 200:
         return 'error'
     return json.dumps(result['dataList'])
+
+
+@app.route('/checkOffline',methods=['POST'])
+def checkOffline():
+    data = request.get_json(silent=True)
+    if 'qingzhen-token' not in data.keys():
+        return 'error'
+    ucookies = data['qingzhen-token']
+    url = 'https://api.2dland.cn/v3/offline/quota'
+    t = time.time()
+    rdata = {'time': int(round(t * 1000))}
+    headers['referer'] = "https://2dland.cn/files/all/"
+    r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies, timeout=40)
+    result = json.loads(r.text)
+    if r.status_code != 200:
+        return 'error'
+    return json.dumps(result)  
+
+
+@app.route('/offline',methods=['POST'])
+def offline():
+    data = request.get_json(silent=True)
+    if 'qingzhen-token' not in data.keys():
+        return 'error'
+    ucookies = data['qingzhen-token']
+    url = 'https://api.2dland.cn/v3/offline/parse'
+    keyword = data['textLink']
+    rdata = {'textLink': keyword}
+    headers['referer'] = "https://2dland.cn/files/all/"
+    r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies, timeout=40)
+    result = json.loads(r.text)
+    if r.status_code != 200 or result['hash'] is None:
+        return 'error'
+
+    ourl = 'https://api.2dland.cn/v3/offline/add'
+    odata = {"savePath": "/","task": [{"ignore": [None],"hash": result['hash']}]}
+    ore = requests.post(ourl, verify=False, json =odata, headers=headers, cookies=ucookies, timeout=40)
+    oresult = json.loads(ore.text)
+
+    if ore.status_code != 200 or oresult['successCount'] is None:
+        return 'error'
+
+    return json.dumps(oresult)
+
+
 
 
 
