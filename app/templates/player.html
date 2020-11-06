@@ -24,7 +24,7 @@
         <el-container>
           <el-header style="height: auto;">
               <el-row>
-              <el-button v-for="category in showCategory" type="category['@id']==currentCategory['@id']?success" @click="getVideos(category)">${category['#text']|categoryName}</el-button>
+              <el-button v-for="category in currentSiteCategory" type="category['@id']==currentCategory['@id']?success" @click="getVideos(category)">${category['#text']|categoryName}</el-button>
               </el-row>
           </el-header>
           <el-main id="videosContainer">
@@ -54,7 +54,7 @@
                     </div>
                 </el-popover>
               </div>
-              <el-pagination v-if="totalPage>1" background  layout="prev, pager, next" :current-page="currentPage"  :total="totalPage" @current-change="handleCurrentChange" > </el-pagination>
+              <el-pagination v-if="totalPage>1" :page-size=20 background  layout="prev, pager, next" :current-page="currentPage"  :total="total" @current-change="handleCurrentChange" > </el-pagination>
          
           </el-main>
         </el-container>
@@ -86,7 +86,8 @@ var app = new Vue({
     currentPage:1,
     videos:[],
     poverwidth:200,
-    totalPage:1
+    totalPage:1,
+    total:0
   },
   computed: {
     showCategory: function () {
@@ -206,6 +207,8 @@ var app = new Vue({
                       layer.msg("请求出错，该分类下可能没有数据");
                       return false;
                   }
+                  console.log(response.data)
+                  that.total = parseInt(response.data.rss.list['@recordcount']);
                   that.totalPage = parseInt(response.data.rss.list['@pagecount']);
                   that.currentPage = parseInt(response.data.rss.list['@page']);
                   that.videos = response.data.rss.list.video;
