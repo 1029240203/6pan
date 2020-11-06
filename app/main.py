@@ -39,6 +39,7 @@ def getplayer():
     url = data['apiurl']
     pagecount = 0
     page = 1
+    pagesize = 20
     recordcount = 0
 
     if 'videolist' in url:
@@ -48,6 +49,7 @@ def getplayer():
             rl = requests.get(listurl, verify=False, headers=headers, timeout=40)
             docl = xmltodict.parse(rl.text)
             pagecount = docl['rss']['list']['@pagecount']
+            pagesize = docl['rss']['list']['@pagesize']
             page = docl['rss']['list']['@page']
             recordcount = docl['rss']['list']['@recordcount']
             idst = [x.get('id') for x in docl['rss']['list']['video']]
@@ -60,6 +62,7 @@ def getplayer():
             r = requests.get(videolisturl, verify=False, headers=headers, timeout=40)
             doc = xmltodict.parse(r.text)
             doc['rss']['list']['@pagecount']=pagecount
+            doc['rss']['list']['@pagesize']=pagesize
             doc['rss']['list']['@page']=page
             doc['rss']['list']['@recordcount']=recordcount
         except:
@@ -70,9 +73,32 @@ def getplayer():
             else:
                 return json.dumps(doc)
     else:
+        ids=''
+        ty=[]
+        print(url)
         try:
-            r = requests.get(url, verify=False, headers=headers, timeout=40)
+            rl = requests.get(url, verify=False, headers=headers, timeout=40)
+            docl = xmltodict.parse(rl.text)
+            pagecount = docl['rss']['list']['@pagecount']
+            pagesize = docl['rss']['list']['@pagesize']
+            page = docl['rss']['list']['@page']
+            recordcount = docl['rss']['list']['@recordcount']
+            idst = [x.get('id') for x in docl['rss']['list']['video']]
+            ty = docl['rss']['class']
+            ids=','.join(idst)
+        except:
+            return 'error'
+
+        videolisturl = url.replace('pg=', 'k=')+'&ac=videolist&ids='+ids
+        try:
+            r = requests.get(videolisturl, verify=False, headers=headers, timeout=40)
             doc = xmltodict.parse(r.text)
+            doc['rss']['list']['@pagesize']=pagesize
+            doc['rss']['list']['@pagecount']=pagecount
+            doc['rss']['list']['@page']=page
+            doc['rss']['list']['@recordcount']=recordcount
+            doc['rss']['class'] = ty
+            print(json.dumps(doc))
         except:
             return 'error'
         else:
