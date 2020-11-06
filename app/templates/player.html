@@ -14,15 +14,27 @@
 
       <el-container v-loading="loading" >
         <el-aside width="20%">  
-            <el-menu  :default-active="currentSite.id.toString()"  class="el-menu-vertical-demo" @open="handleOpen"    @close="handleClose"  background-color="#545c64" text-color="#fff"     active-text-color="#ffd04b">
-              <el-menu-item v-for="site in sites" :index="site.id.toString()" @click="changeSite(site)">
+            <el-menu  :default-active="currentSite.key"  class="el-menu-vertical-demo" @open="handleOpen"    @close="handleClose"  background-color="#545c64" text-color="#fff"     active-text-color="#ffd04b">
+             
+             
+          
+              
+              <el-menu-item v-for="site in sites" :index="site.key" @click="changeSite(site)">
                 <i class="el-icon-menu"></i>
                 <span slot="title">${site.name}</span>
               </el-menu-item>
+
+              <el-menu-item index="source">
+                <el-input placeholder="源" v-model="source">
+                  <el-button slot="append" icon="el-icon-submit" @click="updateSource">更新</el-button>
+                </el-input>
+              </el-menu-item>
+
             </el-menu>
         </el-aside>
         <el-container>
           <el-header style="height: auto;">
+            <h1>${currentSite.name}</h1>
               <el-row>
               <el-button v-for="category in currentSiteCategory" type="category['@id']==currentCategory['@id']?success" @click="getVideos(category)">${category['#text']|categoryName}</el-button>
               </el-row>
@@ -62,24 +74,30 @@
  
     </div>
 </body>
+
+
 <script src="{{ url_for('static', filename='js/jquery-3.5.1.min.js')}}"></script>
 <script src="{{ url_for('static', filename='layer/layer.js')}}"></script>
 <script src="{{ url_for('static', filename='js/vue.js')}}"></script>
 <script src="{{ url_for('static', filename='js/element-ui.js')}}"></script>
 <script src="{{ url_for('static', filename='js/axios.min.js')}}"></script>
 <script src="{{ url_for('static', filename='js/fast-xml-parser.js')}}"></script>
-<script src="{{ url_for('static', filename='js/initData.js')}}"></script>
 <script src="{{ url_for('static', filename='js/xgplayer.js')}}"></script>
 <script src="{{ url_for('static', filename='js/xgplayer-hls.js')}}"></script>
 
+
 <script>
+
+
+
 var app = new Vue({
   delimiters: ['${', '}'],
   el: '#app',
   data: {
+    source:'https://raw.githubusercontent.com/Hunlongyu/ZY-Player/master/src/lib/dexie/iniData/Sites.json',
     isCollapse: true,
-    sites:sites,
-    currentSite:sites[0],
+    sites:[],
+    currentSite:{},
     currentSiteCategory:[],
     currentCategory:{},
     loading:false,
@@ -101,8 +119,7 @@ var app = new Vue({
         this.$nextTick(function () {
             // Code that will run only after the
             // entire view has been rendered
-            this.getCategoryData(this.currentSite.api);
-            this.poverwidth = $('#videosContainer').width();
+            this.initSites()
         })
     },
   filters: {
@@ -128,6 +145,15 @@ var app = new Vue({
         this.currentPage = val;
         this.getVideos(this.currentCategory);
       },
+      async initSites(){
+            var that = this;
+            var url = "{{ url_for('static', filename='js/initData.js')}}";
+            const { data } = await axios.get(url);
+            that.sites = data;
+            that.currentSite = that.sites[0];
+            that.getCategoryData(that.currentSite.api);
+            that.poverwidth = $('#videosContainer').width();
+      },
       changeSite(site){
         var that=this;
         that.currentSite = site;
@@ -150,7 +176,7 @@ var app = new Vue({
                       layer.msg("请求出错，稍后重试");
                       return false;
                   }
-                  console.log(response.data)
+                  //console.log(response.data)
                   that.currentSiteCategory = response.data.rss.class.ty;
                   that.total = parseInt(response.data.rss.list['@recordcount']);
                   that.totalPage = parseInt(response.data.rss.list['@pagecount']);
@@ -167,15 +193,52 @@ var app = new Vue({
                 console.log(error);
               });
       },
+      updateSource(){
+        var that = this;
+        layer.confirm('源是本程序的核心文件，如更新错误会造成无法使用，确定更新？', {
+            btn: ['更新吧','算了'] //按钮
+          }, function(){
+            var data = {'url':that.source};
+            axios.post('/updateSource',data)
+              .then(function (response) {
+                that.loading = false;
+                  if(response.data=='error'){
+                      layer.msg("请求出错，该分类下可能没有数据");
+                      return false;
+                  }
+
+                  if(response.data=='ok'){
+                      layer.msg("更新完成，请刷新页面如无变化，需清除浏览器缓存");
+                      return false;
+                  }
+                  
+                  //console.log(response.data)
+              })
+              .catch(function (error) { // 请求失败处理
+                console.log(error);
+              });
+          }, function(){
+           
+          });
+      },
       play(videoUrl){
-        var videoinfo = videoUrl.split('$');
-        var index1=videoinfo[1].lastIndexOf(".");
-        var index2=videoinfo[1].length;
-        var type=videoinfo[1].substring(index1,index2);
-        
+        var type="";
+        var playurl="";
+        if(videoUrl.indexOf('$')==-1){
+          var index1=videoUrl.lastIndexOf(".");
+          var index2=videoUrl.length;
+          type=videoUrl.substring(index1,index2);
+          playurl=videoUrl;
+        }else{
+          var videoinfo = videoUrl.split('$');
+          var index1=videoinfo[1].lastIndexOf(".");
+          var index2=videoinfo[1].length;
+          type=videoinfo[1].substring(index1,index2);
+          playurl=videoinfo[1];
+        }
 
         if(type.toLowerCase()!='.m3u8'){
-          window.open(videoinfo[1],"_blank");
+          window.open(playurl,"_blank");
         }else{
           var player = null;
           layer.open({
@@ -188,7 +251,7 @@ var app = new Vue({
             success:function(){
                 player = new HlsJsPlayer({
                     "id": "mse",
-                    "url": videoinfo[1],
+                    "url": playurl,
                     "playsinline": true,
                     "autoplay":true,
                     "whitelist": [
@@ -201,7 +264,6 @@ var app = new Vue({
                 player.destroy();
             }
          });
-          
         }
       },
       getVideos(category){
@@ -215,7 +277,6 @@ var app = new Vue({
         }else{
           var data = {"apiurl":that.currentSite.api+'?ac=videolist&t=' + category['@id'] + '&pg=' + that.currentPage};
         }
-
         axios.post('/getplayer',data)
               .then(function (response) {
                 that.loading = false;
