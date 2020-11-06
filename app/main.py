@@ -75,7 +75,6 @@ def getplayer():
     else:
         ids=''
         ty=[]
-        print(url)
         try:
             rl = requests.get(url, verify=False, headers=headers, timeout=40)
             docl = xmltodict.parse(rl.text)
@@ -98,7 +97,6 @@ def getplayer():
             doc['rss']['list']['@page']=page
             doc['rss']['list']['@recordcount']=recordcount
             doc['rss']['class'] = ty
-            print(json.dumps(doc))
         except:
             return 'error'
         else:
@@ -108,9 +106,26 @@ def getplayer():
                 return json.dumps(doc)
 
 
-
+@app.route('/updateSource',methods=['POST'])
+def updateSource():
+    data = request.get_json(silent=True)
+    url = data['url']
+    sites = []
+    try:
+        r = requests.get(url, verify=False, headers=headers, timeout=40)
+        sites = json.loads(r.text)
+    except:
+        return 'error'
+    else:
+        if sites is None:
+            return "error"
+        else:
+            if 'api' in sites[0].keys() and 'name' in sites[0].keys():
+                fo = open(basedir+'/static/js/initData.js', "w")
+                fo.write(json.dumps(sites))
+                fo.close()
+            return 'ok'
    
-
     
     
 
