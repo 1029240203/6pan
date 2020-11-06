@@ -54,7 +54,7 @@
                     </div>
                 </el-popover>
               </div>
-              <el-pagination v-if="totalPage>1" :page-size=20 background  layout="prev, pager, next" :current-page="currentPage"  :total="total" @current-change="handleCurrentChange" > </el-pagination>
+              <el-pagination v-if="totalPage>1" :page-size='pagesize' background  layout="prev, pager, next" :current-page="currentPage"  :total="total" @current-change="handleCurrentChange" > </el-pagination>
          
           </el-main>
         </el-container>
@@ -87,6 +87,7 @@ var app = new Vue({
     videos:[],
     poverwidth:200,
     totalPage:1,
+    pagesize:20,
     total:0
   },
   computed: {
@@ -140,7 +141,7 @@ var app = new Vue({
       getCategoryData(url){
         var that=this;
         layer.load(1);
-        var data = {"apiurl":url};
+        var data = {"apiurl":url+'?1=1'};
         axios.post('/getplayer',data)
               .then(function (response) {
                 layer.closeAll('loading');
@@ -149,9 +150,18 @@ var app = new Vue({
                       layer.msg("请求出错，稍后重试");
                       return false;
                   }
-                  //console.log(response.data)
+                  console.log(response.data)
                   that.currentSiteCategory = response.data.rss.class.ty;
-                  //console.log(response.data)
+                  that.total = parseInt(response.data.rss.list['@recordcount']);
+                  that.totalPage = parseInt(response.data.rss.list['@pagecount']);
+                  that.pagesize = parseInt(response.data.rss.list['@pagesize']);
+                  that.currentPage = parseInt(response.data.rss.list['@page']);
+                  that.videos = response.data.rss.list.video;
+                  if(that.videos.length==0){
+                    layer.msg("请求出错，该分类下可能没有数据");
+                      return false;
+                  }
+
               })
               .catch(function (error) { // 请求失败处理
                 console.log(error);
@@ -199,7 +209,13 @@ var app = new Vue({
         that.videos=[];
         that.loading = true;
         that.currentCategory = category;
-        var data = {"apiurl":that.currentSite.api+'?ac=videolist&t=' + category['@id'] + '&pg=' + that.currentPage};
+        data = {}
+        if(JSON.stringify(category) == "{}"){
+          var data = {"apiurl":that.currentSite.api+'?1=1&pg=' + that.currentPage};
+        }else{
+          var data = {"apiurl":that.currentSite.api+'?ac=videolist&t=' + category['@id'] + '&pg=' + that.currentPage};
+        }
+
         axios.post('/getplayer',data)
               .then(function (response) {
                 that.loading = false;
@@ -207,9 +223,10 @@ var app = new Vue({
                       layer.msg("请求出错，该分类下可能没有数据");
                       return false;
                   }
-                  console.log(response.data)
+                  //console.log(response.data)
                   that.total = parseInt(response.data.rss.list['@recordcount']);
                   that.totalPage = parseInt(response.data.rss.list['@pagecount']);
+                  that.pagesize = parseInt(response.data.rss.list['@pagesize']);
                   that.currentPage = parseInt(response.data.rss.list['@page']);
                   that.videos = response.data.rss.list.video;
                   if(that.videos.length==0){
