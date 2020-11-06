@@ -37,16 +37,53 @@ def palyer():
 def getplayer():
     data = request.get_json(silent=True)
     url = data['apiurl']
-    try:
-        r = requests.get(url, verify=False, headers=headers, timeout=40)
-        doc = xmltodict.parse(r.text)
-    except:
-        return 'error'
-    else:
-        if doc is None:
-            return "error"
+    pagecount = 0
+    page = 1
+    recordcount = 0
+
+    if 'videolist' in url:
+        listurl = url.replace('videolist','list')
+        ids=''
+        try:
+            rl = requests.get(listurl, verify=False, headers=headers, timeout=40)
+            docl = xmltodict.parse(rl.text)
+            pagecount = docl['rss']['list']['@pagecount']
+            page = docl['rss']['list']['@page']
+            recordcount = docl['rss']['list']['@recordcount']
+            idst = [x.get('id') for x in docl['rss']['list']['video']]
+            ids=','.join(idst)
+        except:
+            return 'error'
+
+        videolisturl = url.replace('pg=', 'k=')+'&ids='+ids
+        try:
+            r = requests.get(videolisturl, verify=False, headers=headers, timeout=40)
+            doc = xmltodict.parse(r.text)
+            doc['rss']['list']['@pagecount']=pagecount
+            doc['rss']['list']['@page']=page
+            doc['rss']['list']['@recordcount']=recordcount
+        except:
+            return 'error'
         else:
-            return json.dumps(doc)
+            if doc is None:
+                return "error"
+            else:
+                return json.dumps(doc)
+    else:
+        try:
+            r = requests.get(url, verify=False, headers=headers, timeout=40)
+            doc = xmltodict.parse(r.text)
+        except:
+            return 'error'
+        else:
+            if doc is None:
+                return "error"
+            else:
+                return json.dumps(doc)
+
+
+
+   
 
     
     
