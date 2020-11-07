@@ -365,6 +365,9 @@
                       }
                       if(response.data['available']>0){
                           that.offline(response.data['available']);
+                      }else{
+                        layer.msg("离线余额已完");
+                        return false;
                       }
                   })
                   .catch(function (error) { // 请求失败处理
