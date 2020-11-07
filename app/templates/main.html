@@ -98,6 +98,7 @@
             <tr>
               <td colspan="5" class="text-center">
               <el-pagination v-if="totalPage>1" :page-size='pagesize' background  layout="prev, pager, next,jumper" :current-page="currentPage"  :total="totalNum" @current-change="LoadMore" > </el-pagination>
+              <el-pagination v-if="action=='search'" :page-size='pagesize' background  layout="prev,next" :current-page="currentPage" @current-change="LoadMore" > </el-pagination>
             </td>
             </tr>
           </tfoot>
@@ -288,8 +289,11 @@
                           return false;
                       }
                       //that.files=response.data;
-                      that.totalNum = response.data['parent']['children'];
-                      that.totalPage = Math.ceil(response.data['parent']['children']/20);　
+                  
+                      if(that.action!='search'){
+                        that.totalNum = response.data['parent']['children'];
+                        that.totalPage = Math.ceil(response.data['parent']['children']/20);　
+                      }                      
                       that.files = response.data['dataList'];
                       //console.log(that.files)
                   })
@@ -462,11 +466,11 @@ var a=window.open('about:blank').document;
             })
       },
           getFilesPath:function (path) {
-
               layer.load(1);
               var that = this;
               that.files=[];
               that.path = path;
+              that.action="files";
               //that.createPath(path);
               that.pageNo=1;
               that.currentPage=1;
