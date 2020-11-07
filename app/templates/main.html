@@ -251,6 +251,12 @@
                   });
           },
           changeUser:function(user){
+              this.pageNo=1;
+              this.totalPage=1;
+              this.totalNum=0;
+              this.path='/';
+              this.action='file';
+              this.keyword='';
               this.currentUser=user;
               this.getFiles();
           },
