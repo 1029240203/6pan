@@ -79,7 +79,7 @@
             </div>
           </nav>
       
-          <main v-show="action=='playlist'" role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4" style="margin-bottom: 20px;">
+          <main v-if="action=='playlist'" role="main" id="videosContainer" class="col-md-9 ml-sm-auto col-lg-10 px-md-4" style="margin-bottom: 20px;">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
               <h1 class="h2">我追的剧</h1>
               <div class="btn-toolbar mb-2 mb-md-0">
@@ -136,12 +136,12 @@
           </main>
 
 
-          <main v-show="action=='videos'" role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4" style="margin-bottom: 20px;" id="videosContainer">
+          <main v-if="action=='videos'" role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4" style="margin-bottom: 20px;" id="videosContainer">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
               <h1 class="h2">${currentSite.name}</h1>
               <div>
               <a class="btn" v-bind:class="{'active':!currentCategory['@id']}" @click="getLatestData" >最近更新</a>
-              <a class="btn" v-for="category in currentSiteCategory" v-bind:class="{'active':category['@id']==currentCategory['@id']}" @click="getVideos(category)" >${category['#text']|categoryName}</a>
+              <a class="btn" v-for="category in showCategory" v-bind:class="{'active':category['@id']==currentCategory['@id']}" @click="getVideos(category)" >${category['#text']|categoryName}</a>
               </div>
             </div>
             <div class="d-flex flex-wrap align-items-center pt-3 pb-2 mb-3">
@@ -515,7 +515,6 @@ var app = new Vue({
                     }
                     video.showp = true;
                     video.width = $('#videosContainer').width();
-                    console.log($('#videosContainer').width());
                     video.dl = response.data.rss.list.video.dl;
                     app.$set(app.favourites, index, video);
                 })
