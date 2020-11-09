@@ -30,7 +30,11 @@ def sixpan():
 
 @app.route('/movies')
 def palyer():
-    return render_template('player.html')
+    return render_template('tube.html')
+
+@app.route('/mytube')
+def mytube():
+    return render_template('tube.html')
 
 
 @app.route('/getplayer',methods=['POST'])
@@ -104,6 +108,28 @@ def getplayer():
                 return "error"
             else:
                 return json.dumps(doc)
+
+@app.route('/getplayInfo',methods=['POST'])
+def getplayInfo():
+    data = request.get_json(silent=True)
+    url = data['url']
+    videolisturl = url+'?ac=videolist&ids='+data['id']
+    try:
+        r = requests.get(videolisturl, verify=False, headers=headers, timeout=40)
+        doc = xmltodict.parse(r.text)
+    except:
+        return 'error'
+    else:
+        if doc is None:
+            return "error"
+        else:
+            return json.dumps(doc)
+
+
+       
+
+
+
 
 
 @app.route('/updateSource',methods=['POST'])
