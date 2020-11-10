@@ -434,7 +434,7 @@
               var data = that.currentUser;
               data['identity']=vfile['identity'];
               var url ="/getDownload";
-var a=window.open('about:blank').document;
+              
                await axios.post(url,data)
                   .then(function (response) {
                       var videoUrl = response.data['downloadAddress'];
@@ -443,13 +443,19 @@ var a=window.open('about:blank').document;
                           layer.msg("请求出错，稍后重试或重新登陆");
                           return false;
                       }
-                      a.body.innerHTML='<div style="width: 100%;text-align: center;"><video id="example_video_1" class="video-js vjs-default-skin" controls preload="none" style="width:90%;margin: 0 auto;" <source src="'+response.data['downloadAddress']+'" type="video/mp4"> </video></br><textarea style="width: 100%">'+response.data['downloadAddress']+'</textarea></div>';
-                         layer.confirm('复制播放地址？', {
-                              btn: ['是','否'] //按钮
-                            }, function(){
-                                    that.playUrl = videoUrl;
-                                    that.doCopy();
-                            });
+                         layer.confirm('已经获取到播放地址，请选择操作', {
+                              btn: ['复制地址','VLC打开','网页打开'] //按钮
+                            , btn3:function(index,layero){
+                              var a=window.open('about:blank').document;
+                              a.body.innerHTML='<div style="width: 100%;text-align: center;"><video id="example_video_1" class="video-js vjs-default-skin" controls preload="none" style="width:90%;margin: 0 auto;" <source src="'+response.data['downloadAddress']+'" type="video/mp4"> </video></br><textarea style="width: 100%">'+response.data['downloadAddress']+'</textarea></div>';  
+                            },btn1:function(index,layero){
+                              that.playUrl = videoUrl;
+                              that.doCopy();
+                            },btn2:function(index,layero){
+                              window.location.href="vlc://"+videoUrl;
+                            }
+                          });
+
                   })
                   .catch(function (error) { // 请求失败处理
                     console.log(error);
