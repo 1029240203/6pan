@@ -448,11 +448,20 @@
                             , btn3:function(index,layero){
                               var a=window.open('about:blank').document;
                               a.body.innerHTML='<div style="width: 100%;text-align: center;"><video id="example_video_1" class="video-js vjs-default-skin" controls preload="none" style="width:90%;margin: 0 auto;" <source src="'+response.data['downloadAddress']+'" type="video/mp4"> </video></br><textarea style="width: 100%">'+response.data['downloadAddress']+'</textarea></div>';  
+                                return false;
                             },btn1:function(index,layero){
                               that.playUrl = videoUrl;
-                              that.doCopy();
+                              that.$copyText(videoUrl).then(function (e) {
+                                alert("复制成功");
+                                //console.log(e)
+                              }, function (e) {
+                                alert("复制失败，请手动复制");
+                                //console.log(e)
+                              })
+                              return false;
                             },btn2:function(index,layero){
                               window.location.href="vlc://"+videoUrl;
+                              return false;
                             }
                           });
 
@@ -462,15 +471,7 @@
                   });
 
           },
-           doCopy: function () {
-            this.$copyText(this.playUrl).then(function (e) {
-              layer.msg("复制成功");
-              //console.log(e)
-            }, function (e) {
-               layer.msg("复制失败，请手动复制");
-              //console.log(e)
-            })
-      },
+           
           getFilesPath:function (path) {
               layer.load(1);
               var that = this;
