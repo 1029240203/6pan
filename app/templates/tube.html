@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Tube</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/element-ui.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}" />
@@ -20,8 +21,14 @@
 @media only screen and (max-width: 767.98px) {
     .navbtn {width:100%;}
     .pflex{
-      flex: 0 0 33%;
+      flex: 0 0 44%;
       margin: 10px;
+    }
+    .sidebar{
+      top:4rem;
+    }
+    .navbar-nav{
+      margin: 5px;
     }
 }
 </style>
@@ -56,9 +63,9 @@
       
       <div class="container-fluid" style="margin-bottom: 20px;">
         <div class="row">
-          <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+          <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
             <div class="sidebar-sticky pt-3">
-              <ul class="nav flex-column" style="padding-bottom: 5rem;">
+              <ul class="nav flex-column" style="padding-bottom: 15rem;">
 
                 <li class="nav-item" v-for="site in sites">
                   <a class="nav-link" v-bind:class="{'active':site['id']==currentSite['id']}" @click="changeSite(site)">
@@ -192,12 +199,15 @@
 <script src="{{ url_for('static', filename='js/vue.js')}}"></script>
 <script src="{{ url_for('static', filename='js/element-ui.js')}}"></script>
 <script src="{{ url_for('static', filename='js/axios.min.js')}}"></script>
-<script src="{{ url_for('static', filename='js/fast-xml-parser.js')}}"></script>
-<script src="{{ url_for('static', filename='js/xgplayer.js')}}"></script>
-<script src="{{ url_for('static', filename='js/xgplayer-hls.js')}}"></script>
+<script src="{{ url_for('static', filename='js/flv.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/hls.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/dash.all.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/webtorrent.min.js')}}"></script>
+<script src="{{ url_for('static', filename='js/DPlayer.min.js')}}"></script>
 <script type="application/javascript" src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
 <script type="application/javascript" src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
 <script type="application/javascript" src="{{ url_for('static', filename='js/feather.min.js') }}"></script>
+<script type="application/javascript" src="{{ url_for('static', filename='js/vue-clipboard.min.js') }}"></script>
 
 
 
@@ -355,10 +365,16 @@ var app = new Vue({
         that.videos = [];
         that.currentCategory={};
         that.getCategoryData(site.api);
+        $('.collapse').collapse('hide');
       },
     getVideos(category){
         var that=this;
         layer.load(1);
+        if(category!=that.currentCategory){
+          that.currentPage=1;
+        }
+
+
         that.currentCategory = category;
         data = {}
         if(JSON.stringify(category) == "{}"){
@@ -394,6 +410,7 @@ var app = new Vue({
               });
       },
     play(videoUrl){
+        var that = this;
         var type="";
         var playurl="";
         if(videoUrl.indexOf('$')==-1){
@@ -419,18 +436,28 @@ var app = new Vue({
             offset: 'lt',
             shadeClose: true,
             shade: false,
-            content: '<div id="mse"></div>',
+            btn: ['拷贝地址', '关闭'], //只是为了演示
+            yes: function(){
+              that.$copyText(playurl).then(function (e) {
+                  layer.msg("复制成功");
+                  //console.log(e)
+                }, function (e) {
+                  layer.msg("复制失败，请手动复制");
+                  //console.log(e)
+                })
+            },
+            btn2: function(){
+              layer.closeAll();
+            },
+            content: '<div id="dplayer"></div>',
             success:function(){
-                player = new HlsJsPlayer({
-                    "id": "mse",
-                    "url": playurl,
-                    "playsinline": true,
-                    "autoplay":true,
-                    "whitelist": [
-                        ""
-                    ],
-                    "autoplay": true,
-                      });
+                player = new DPlayer({
+                      container: document.getElementById('dplayer'),
+                      screenshot: true,
+                      video: {
+                          url: playurl,
+                      }
+                  });
             },
             end: function(){
                 player.destroy();
@@ -481,7 +508,7 @@ var app = new Vue({
       }
     },
     savePlaylist(){
-      localStorage.setItem('favourites',JSON.stringify(this.favourites))
+      localStorage.setItem('favourites',JSON.stringify(this.favourites));
     },
     addplaylist(video){
         var pfavourite = {};
@@ -491,6 +518,7 @@ var app = new Vue({
         pfavourite['api'] = this.currentSite.api;
         this.favourites.push(pfavourite);
         this.savePlaylist();
+        layer.msg("追剧成功，请在追剧清单查看");
     },
     delplaylist(index){
         this.favourites.splice(index, 1);;
