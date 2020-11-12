@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-from flask import request, Flask, render_template,jsonify
+from flask import request, Flask, render_template, jsonify
 import requests
 import hashlib
 import json
@@ -8,12 +8,14 @@ import xmltodict
 import time
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-usersdir = basedir+'/users/'
+usersdir = basedir + '/users/'
 
 
 app = Flask(__name__)
 
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36'}
+
+
 @app.route('/favicon.ico')
 def get_fav():
     return app.send_static_file('favicon.ico')
@@ -22,6 +24,7 @@ def get_fav():
 @app.route('/')
 def main():
     return render_template('index.html')
+
 
 @app.route('/6pan')
 def sixpan():
@@ -32,12 +35,47 @@ def sixpan():
 def palyer():
     return render_template('tube.html')
 
+
 @app.route('/mytube')
 def mytube():
     return render_template('tube.html')
 
 
-@app.route('/getplayer',methods=['POST'])
+@app.route('/iptv')
+def iptv():
+    return render_template('iptv.html')
+
+
+@app.route('/getChannels')
+def getChannels():
+    videos = []
+    i = 0
+    try:
+        f = open(basedir + '/iptv/channels.txt')
+        line = f.readline()
+        while line:
+            line = f.readline()
+            if ',' not in line:
+                continue
+            info = line.split(',')
+            video = {}
+            video['id'] = i
+            video['name'] = info[0]
+            video['url'] = info[1]
+            video['type'] = 'auto'
+            videos.append(video)
+            i = i + 1
+        f.close()
+    except:
+        return 'error'
+    else:
+        if len(videos) <= 1:
+            return "error"
+        else:
+            return json.dumps(videos)
+
+
+@app.route('/getplayer', methods=['POST'])
 def getplayer():
     data = request.get_json(silent=True)
     url = data['apiurl']
@@ -47,8 +85,8 @@ def getplayer():
     recordcount = 0
 
     if 'videolist' in url:
-        listurl = url.replace('videolist','list')
-        ids=''
+        listurl = url.replace('videolist', 'list')
+        ids = ''
         try:
             rl = requests.get(listurl, verify=False, headers=headers, timeout=40)
             docl = xmltodict.parse(rl.text)
@@ -57,18 +95,18 @@ def getplayer():
             page = docl['rss']['list']['@page']
             recordcount = docl['rss']['list']['@recordcount']
             idst = [x.get('id') for x in docl['rss']['list']['video']]
-            ids=','.join(idst)
+            ids = ','.join(idst)
         except:
             return 'error'
 
-        videolisturl = url.replace('pg=', 'k=')+'&ids='+ids
+        videolisturl = url.replace('pg=', 'k=') + '&ids=' + ids
         try:
             r = requests.get(videolisturl, verify=False, headers=headers, timeout=40)
             doc = xmltodict.parse(r.text)
-            doc['rss']['list']['@pagecount']=pagecount
-            doc['rss']['list']['@pagesize']=pagesize
-            doc['rss']['list']['@page']=page
-            doc['rss']['list']['@recordcount']=recordcount
+            doc['rss']['list']['@pagecount'] = pagecount
+            doc['rss']['list']['@pagesize'] = pagesize
+            doc['rss']['list']['@page'] = page
+            doc['rss']['list']['@recordcount'] = recordcount
         except:
             return 'error'
         else:
@@ -77,8 +115,8 @@ def getplayer():
             else:
                 return json.dumps(doc)
     else:
-        ids=''
-        ty=[]
+        ids = ''
+        ty = []
         try:
             rl = requests.get(url, verify=False, headers=headers, timeout=40)
             docl = xmltodict.parse(rl.text)
@@ -88,18 +126,18 @@ def getplayer():
             recordcount = docl['rss']['list']['@recordcount']
             idst = [x.get('id') for x in docl['rss']['list']['video']]
             ty = docl['rss']['class']
-            ids=','.join(idst)
+            ids = ','.join(idst)
         except:
             return 'error'
 
-        videolisturl = url.replace('pg=', 'k=')+'&ac=videolist&ids='+ids
+        videolisturl = url.replace('pg=', 'k=') + '&ac=videolist&ids=' + ids
         try:
             r = requests.get(videolisturl, verify=False, headers=headers, timeout=40)
             doc = xmltodict.parse(r.text)
-            doc['rss']['list']['@pagesize']=pagesize
-            doc['rss']['list']['@pagecount']=pagecount
-            doc['rss']['list']['@page']=page
-            doc['rss']['list']['@recordcount']=recordcount
+            doc['rss']['list']['@pagesize'] = pagesize
+            doc['rss']['list']['@pagecount'] = pagecount
+            doc['rss']['list']['@page'] = page
+            doc['rss']['list']['@recordcount'] = recordcount
             doc['rss']['class'] = ty
         except:
             return 'error'
@@ -109,11 +147,12 @@ def getplayer():
             else:
                 return json.dumps(doc)
 
-@app.route('/getplayInfo',methods=['POST'])
+
+@app.route('/getplayInfo', methods=['POST'])
 def getplayInfo():
     data = request.get_json(silent=True)
     url = data['url']
-    videolisturl = url+'?ac=videolist&ids='+data['id']
+    videolisturl = url + '?ac=videolist&ids=' + data['id']
     try:
         r = requests.get(videolisturl, verify=False, headers=headers, timeout=40)
         doc = xmltodict.parse(r.text)
@@ -126,13 +165,7 @@ def getplayInfo():
             return json.dumps(doc)
 
 
-       
-
-
-
-
-
-@app.route('/updateSource',methods=['POST'])
+@app.route('/updateSource', methods=['POST'])
 def updateSource():
     data = request.get_json(silent=True)
     url = data['url']
@@ -147,17 +180,13 @@ def updateSource():
             return "error"
         else:
             if 'api' in sites[0].keys() and 'name' in sites[0].keys():
-                fo = open(basedir+'/static/js/initData.js', "w")
+                fo = open(basedir + '/static/js/initData.js', "w")
                 fo.write(json.dumps(sites))
                 fo.close()
             return 'ok'
-   
-    
-    
 
 
-
-@app.route('/login',methods=['POST'])
+@app.route('/login', methods=['POST'])
 def login():
     # postdata = request.form['id']
     # file = request.files['file']
@@ -169,7 +198,7 @@ def login():
     url = "https://account.2dland.cn/v3/oauth/login"
     username = data['username']
     password = data['password']
-    pwd=hashlib.md5(password.encode("utf-8")).hexdigest()
+    pwd = hashlib.md5(password.encode("utf-8")).hexdigest()
 
     d = {'user': username, 'password': pwd, 'countryCode': ''}
     r = s.post(url, verify=False, data=d)
@@ -183,18 +212,19 @@ def login():
         checkcookieurl = "https://account.2dland.cn/v3/oauth/checkCookie?appid=3a5654a9ccc9&destination=https:%2F%2F2dland.cn%2Ffiles%2Fall%2F&lang=zh-CN&scope=&state=7hk2fic6c&response=redirect"
         rc = s.get(checkcookieurl, verify=False, headers=headers, timeout=40)
         user = {}
-        user['username']=username
+        user['username'] = username
         user['password'] = pwd
         user['qingzhen-token'] = s.cookies.get_dict()
-        userstring =  json.dumps(user)
+        userstring = json.dumps(user)
         # 打开文件
-        fo = open(usersdir+username+".txt", "w")
+        fo = open(usersdir + username + ".txt", "w")
         fo.write(userstring)
         fo.close()
         return userstring
     return 'error'
 
-@app.route('/relogin',methods=['POST'])
+
+@app.route('/relogin', methods=['POST'])
 def relogin():
     # postdata = request.form['id']
     # file = request.files['file']
@@ -206,12 +236,12 @@ def relogin():
     url = "https://account.2dland.cn/v3/oauth/login"
     username = data['username']
 
-    with open(usersdir + username+".txt") as f:
+    with open(usersdir + username + ".txt") as f:
         content = f.read()
         user = json.loads(content)
 
     password = user['password']
-    #pwd=hashlib.md5(password.encode("utf-8")).hexdigest()
+    # pwd=hashlib.md5(password.encode("utf-8")).hexdigest()
 
     d = {'user': username, 'password': password, 'countryCode': ''}
     r = s.post(url, verify=False, data=d, timeout=40)
@@ -224,12 +254,12 @@ def relogin():
         checkcookieurl = "https://account.2dland.cn/v3/oauth/checkCookie?appid=3a5654a9ccc9&destination=https:%2F%2F2dland.cn%2Ffiles%2Fall%2F&lang=zh-CN&scope=&state=7hk2fic6c&response=redirect"
         rc = s.get(checkcookieurl, verify=False, headers=headers, timeout=40)
         user = {}
-        user['username']=username
+        user['username'] = username
         user['password'] = password
         user['qingzhen-token'] = s.cookies.get_dict()
-        userstring =  json.dumps(user)
+        userstring = json.dumps(user)
         # 打开文件
-        fo = open(usersdir+username+".txt", "w")
+        fo = open(usersdir + username + ".txt", "w")
         fo.write(userstring)
         fo.close()
         return userstring
@@ -241,7 +271,7 @@ def getUsers():
     files = os.listdir(usersdir)
     users = []
     for file in files:
-        with open(usersdir+file) as f:
+        with open(usersdir + file) as f:
             content = f.read()
             user = json.loads(content)
             user.pop('password', None)
@@ -250,14 +280,15 @@ def getUsers():
     info['users'] = users
     return json.dumps(users)
 
-@app.route('/delUser',methods=['POST'])
+
+@app.route('/delUser', methods=['POST'])
 def delUser():
     # postdata = request.form['id']
     # file = request.files['file']
     # recognize_info = {'id': postdata, 'info': '收到' + file.filename}
     # return jsonify(recognize_info), 201
     data = request.get_json(silent=True)
-    userfile = usersdir+data['username']+'.txt'
+    userfile = usersdir + data['username'] + '.txt'
     if os.path.exists(userfile):  # 如果文件存在
         # 删除文件，可使用以下两种方法。
         os.remove(userfile)
@@ -267,7 +298,8 @@ def delUser():
 
     return 'error'
 
-@app.route('/getFiles',methods=['POST'])
+
+@app.route('/getFiles', methods=['POST'])
 def getFiles():
     data = request.get_json(silent=True)
     if 'qingzhen-token' not in data.keys():
@@ -290,8 +322,7 @@ def getFiles():
         return json.dumps(result)
 
 
-
-@app.route('/getVideos',methods=['POST'])
+@app.route('/getVideos', methods=['POST'])
 def getVideos():
     data = request.get_json(silent=True)
     if 'qingzhen-token' not in data.keys():
@@ -299,7 +330,7 @@ def getVideos():
     ucookies = data['qingzhen-token']
     url = 'https://api.2dland.cn/v3/files/list'
     start = (int(data['pageno']) - 1) * 20
-    rdata = {'parentIdentity': '::all', 'name': '', 'limit': 20, 'start': start, 'orderby': '','type': 30}
+    rdata = {'parentIdentity': '::all', 'name': '', 'limit': 20, 'start': start, 'orderby': '', 'type': 30}
 
     headers['referer'] = "https://2dland.cn/files/all/"
     r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies, timeout=40)
@@ -308,7 +339,8 @@ def getVideos():
         return 'error'
     return json.dumps(result)
 
-@app.route('/getDownload',methods=['POST'])
+
+@app.route('/getDownload', methods=['POST'])
 def getDownload():
     data = request.get_json(silent=True)
     if 'qingzhen-token' not in data.keys():
@@ -324,7 +356,7 @@ def getDownload():
     return json.dumps(result)
 
 
-@app.route('/searchFiles',methods=['POST'])
+@app.route('/searchFiles', methods=['POST'])
 def searchFiles():
     data = request.get_json(silent=True)
     if 'qingzhen-token' not in data.keys():
@@ -333,7 +365,7 @@ def searchFiles():
     url = 'https://api.2dland.cn/v3/newfile/list'
     start = (int(data['pageno']) - 1) * 20
     keyword = data['keyword']
-    rdata = {'limit': 20, 'parentIdentity': "", 'name': keyword,'start': start, 'search': True,}
+    rdata = {'limit': 20, 'parentIdentity': "", 'name': keyword, 'start': start, 'search': True, }
     headers['referer'] = "https://2dland.cn/files/all/"
     r = requests.post(url, verify=False, data=rdata, headers=headers, cookies=ucookies, timeout=40)
     result = json.loads(r.text)
@@ -342,7 +374,7 @@ def searchFiles():
     return json.dumps(result)
 
 
-@app.route('/checkOffline',methods=['POST'])
+@app.route('/checkOffline', methods=['POST'])
 def checkOffline():
     data = request.get_json(silent=True)
     if 'qingzhen-token' not in data.keys():
@@ -356,10 +388,10 @@ def checkOffline():
     result = json.loads(r.text)
     if r.status_code != 200:
         return 'error'
-    return json.dumps(result)  
+    return json.dumps(result)
 
 
-@app.route('/offline',methods=['POST'])
+@app.route('/offline', methods=['POST'])
 def offline():
     data = request.get_json(silent=True)
     if 'qingzhen-token' not in data.keys():
@@ -375,8 +407,8 @@ def offline():
         return 'error'
 
     ourl = 'https://api.2dland.cn/v3/offline/add'
-    odata = {"savePath": "/","task": [{"ignore": [None],"hash": result['hash']}]}
-    ore = requests.post(ourl, verify=False, json =odata, headers=headers, cookies=ucookies, timeout=40)
+    odata = {"savePath": "/", "task": [{"ignore": [None], "hash": result['hash']}]}
+    ore = requests.post(ourl, verify=False, json=odata, headers=headers, cookies=ucookies, timeout=40)
     oresult = json.loads(ore.text)
 
     if ore.status_code != 200 or oresult['successCount'] is None:
@@ -385,8 +417,5 @@ def offline():
     return json.dumps(oresult)
 
 
-
-
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10003, debug = True)
+    app.run(host='0.0.0.0', port=10003, debug=True)
