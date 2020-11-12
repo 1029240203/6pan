@@ -12,3 +12,5 @@
 ~~目前不知道哪里原因导致bridge网络模式下无法使用请使用host模式。：本地docker问题造成~~
 
 如需修改端口可修改/etc/nginx/conf.d/nginx.conf和/app/main.py两个文件里的端口信息
+
+加入影院和IPTV 不负责IPTV源的维护  如需改源 修改iptv下channels.txt即可
