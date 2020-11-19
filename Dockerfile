@@ -7,7 +7,7 @@ EXPOSE 10003
 
 
 COPY ./app /app
-RUN rm -f ./app/users/.gitkeep
+RUN rm -f /app/users/.gitkeep
 
 
 
