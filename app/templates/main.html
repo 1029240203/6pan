@@ -90,7 +90,7 @@
                 </td>
                 <td>${file['size']|bytesToSize}</td>
                 <td>${file['ctime']|formatDate}</td>
-                  <td><a class="text-primary" v-if="file['type']==30" title="播放" @click="play(file)"><i data-feather="play"></i></a>
+                  <td><a class="text-primary" title="播放" @click="play(file)"><i data-feather="play"></i></a>
                 </td>
             </tr>
           </tbody>
