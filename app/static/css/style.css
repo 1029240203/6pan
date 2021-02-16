@@ -227,7 +227,8 @@
 
 .shake {
 	-webkit-animation-name: shake;
-	animation-name: shake
+	animation-name: shake;
+	max-width:128px;
 }
 
 @-webkit-keyframes swing {
