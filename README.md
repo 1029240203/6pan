@@ -10,7 +10,7 @@ https://hub.docker.com/r/ykxvk8yl5l/6pan
 - 端口为：10003  Vulume:/app/users
 ### 除了以上三点再没其它功能了
 ## 由于6盘还处于开发阶段api随时可能更改，再加上现有已知bug。该应用随时会挂，玩玩就行了。
-~~目前不知道哪里原因导致bridge网络模式下无法使用请使用host模式。：本地docker问题造成~~
+~~目前不知道哪里原因导致bridge网络模式下无法使用请使用host模式。：本地docker问题造成~~111
 
 如需修改端口可修改/etc/nginx/conf.d/nginx.conf和/app/main.py两个文件里的端口信息
 
